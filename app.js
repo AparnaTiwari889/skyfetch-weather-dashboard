@@ -1,32 +1,49 @@
-const apiKey = "YOUR_API_KEY";
-const cityName = "London";
+// Your OpenWeatherMap API Key
+const API_KEY = 'YOUR_API_KEY_HERE';  // Replace with your actual API key
+const API_URL = 'https://api.openweathermap.org/data/2.5/weather';
 
-const cityElement = document.getElementById("city");
-const tempElement = document.getElementById("temperature");
-const descElement = document.getElementById("description");
-const iconElement = document.getElementById("icon");
-
-function fetchWeather() {
-  const url = `https://api.openweathermap.org/data/2.5/weather?q=${cityName}&appid=${apiKey}&units=metric`;
-
-  axios.get(url)
-    .then(function(response) {
-      const data = response.data;
-
-      const city = data.name;
-      const temperature = data.main.temp;
-      const description = data.weather[0].description;
-      const iconCode = data.weather[0].icon;
-
-      cityElement.textContent = city;
-      tempElement.textContent = `Temperature: ${temperature}°C`;
-      descElement.textContent = `Condition: ${description}`;
-      iconElement.src = `https://openweathermap.org/img/wn/${iconCode}@2x.png`;
-    })
-    .catch(function(error) {
-      console.error("Error fetching weather:", error);
-      cityElement.textContent = "Failed to load weather data.";
-    });
+// Function to fetch weather data
+function getWeather(city) {
+    // Build the complete URL
+    const url = `${API_URL}?q=${city}&appid=${API_KEY}&units=metric`;
+    
+    // Make API call using Axios
+    axios.get(url)
+        .then(function(response) {
+            // Success! We got the data
+            console.log('Weather Data:', response.data);
+            displayWeather(response.data);
+        })
+        .catch(function(error) {
+            // Something went wrong
+            console.error('Error fetching weather:', error);
+            document.getElementById('weather-display').innerHTML = 
+                '<p class="loading">Could not fetch weather data. Please try again.</p>';
+        });
 }
 
-fetchWeather();
+// Function to display weather data
+function displayWeather(data) {
+    // Extract the data we need
+    const cityName = data.name;
+    const temperature = Math.round(data.main.temp);
+    const description = data.weather[0].description;
+    const icon = data.weather[0].icon;
+    const iconUrl = `https://openweathermap.org/img/wn/${icon}@2x.png`;
+    
+    // Create HTML to display
+    const weatherHTML = `
+        <div class="weather-info">
+            <h2 class="city-name">${cityName}</h2>
+            <img src="${iconUrl}" alt="${description}" class="weather-icon">
+            <div class="temperature">${temperature}°C</div>
+            <p class="description">${description}</p>
+        </div>
+    `;
+    
+    // Put it on the page
+    document.getElementById('weather-display').innerHTML = weatherHTML;
+}
+
+// Call the function when page loads
+getWeather('London');
